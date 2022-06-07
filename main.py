@@ -13,6 +13,10 @@ logging.basicConfig(
     datefmt="%D %H:%M:%S",
 )
 
+
+############################
+### Defining global variables. We could use a separate file for better scalability.
+###########################
 CONFIG_PARAMS = {}
 
 
@@ -59,7 +63,9 @@ DEPARTMENTS_DT = {"ID": "Int32", "DEPARTMENT": "string"}
 
 JOBS_DT = {"ID": "Int32", "JOB": "string"}
 
-
+############################
+### In this function we read the config.json file to get the credentials for the snowflake connection
+###########################
 def initialize():
     with open("config.json") as json_data_file:
         global CONFIG_PARAMS
@@ -74,8 +80,9 @@ def initialize():
 
 app = Flask(__name__)
 api = Api(app)
-
-
+############################
+### Here I defined the api routes for each of the tables
+###########################
 class Hired_Employees(Resource):
     def get(self, operation=None):
         if operation == "upload":
@@ -150,7 +157,9 @@ api.add_resource(Hired_Employees, "/hired_employees/<string:operation>")
 api.add_resource(Departments, "/departments/<string:operation>")
 api.add_resource(Jobs, "/jobs/<string:operation>")
 
-
+############################
+### Main
+###########################
 if __name__ == "__main__":
     initialize()
     app.run(host="0.0.0.0",port=3000, debug=True)

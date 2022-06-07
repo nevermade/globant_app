@@ -8,10 +8,9 @@ from fastavro import writer, reader, parse_schema, schemaless_writer
 
 CHUNK_SIZE = 1000
 
-"""
--This is a function to upload a csv file to Snowflake. It requires a connection to snowflake
--Since it requires specific libraries I used pipenv to create the pipfile.lock and pipfile files to better distribute this code.
-"""
+############################
+### Function to read a csv in chunks and upload it to snowflake without null records
+###########################
 
 
 def load_csv_to_snowflake_table(
@@ -28,7 +27,6 @@ def load_csv_to_snowflake_table(
     try:
         cs.execute(f"USE DATABASE GLOBANT")
         cs.execute(f"USE SCHEMA PUBLIC")
-        # Here I process the file in chunks to not overload memory
         df = pd.DataFrame()
         for chunk in pd.read_csv(
             filename,
@@ -51,7 +49,9 @@ def load_csv_to_snowflake_table(
     finally:
         cs.close()
 
-
+############################
+### Function to read a table from snowflake and create an avro file for backup
+###########################
 def backup_table_to_avro(credentials, tablename, schema):
     conn = snowflake.connector.connect(
         user=credentials["user"],
@@ -89,7 +89,9 @@ def backup_table_to_avro(credentials, tablename, schema):
     finally:
         cs.close()
 
-
+############################
+### Function to read an avro file and upload the data to snowflake
+###########################
 def restore_table_from_avro(credentials, tablename):
 
     conn = snowflake.connector.connect(
