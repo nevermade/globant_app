@@ -30,7 +30,8 @@ def load_csv_to_snowflake_table(
 
     cs = conn.cursor()
     try:
-             
+        cs.execute(f"USE DATABASE GLOBANT")
+        cs.execute(f"USE SCHEMA PUBLIC")       
         # Here I process the file in chunks to not overload memory
         for chunk in pd.read_csv(filename, chunksize=CHUNK_SIZE, names=colnames, on_bad_lines='skip',dtype=datatypes):
             # chunk.columns = chunk.columns.str.upper()
@@ -84,5 +85,8 @@ def backup_table_to_avro(credentials, tablename, schema):
         cs.close()
 
     
-#def restore_table_from_avro(credentials, tablename):
-
+def restore_table_from_avro(credentials, tablename):
+    with open(f'avro_backup/{tablename}.avro','rb') as fo:
+        avro_reader = reader(fo)
+        for record in avro_reader:
+            print(record)
