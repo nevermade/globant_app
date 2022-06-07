@@ -47,6 +47,19 @@ JOB_SCHEMA = {
 }
 
 
+HIRED_EMPLOYEES_DT = {
+    "ID": "Int32",
+    "NAME": "string",
+    "DATETIME": "string",
+    "DEPARTMENT_ID": "Int32",
+    "JOB_ID": "Int32",
+}
+
+DEPARTMENTS_DT = {"ID": "Int32", "DEPARTMENT": "string"}
+
+JOBS_DT = {"ID": "Int32", "JOB": "string"}
+
+
 def initialize():
     with open("config.json") as json_data_file:
         global CONFIG_PARAMS
@@ -71,25 +84,20 @@ class Hired_Employees(Resource):
                 "HIRED_EMPLOYEES",
                 "hired_employees.csv",
                 colnames=["ID", "NAME", "DATETIME", "DEPARTMENT_ID", "JOB_ID"],
-                datatypes={
-                    "ID": "Int32",
-                    "NAME": "string",
-                    "DATETIME": "string",
-                    "DEPARTMENT_ID": "Int32",
-                    "JOB_ID": "Int32",
-                },
+                datatypes=HIRED_EMPLOYEES_DT,
             )
-            if result:
-                return {"message": "The file was uploaded"}, 200
+            if result.shape[0]>=0:
+                return {"message": "The file was uploaded",'errors':result.to_json(orient='records')}, 200
             else:
                 return {"message": "Error encountered while processing the file"}, 200
         elif operation == "backup":
             backup_table_to_avro(
                 CONFIG_PARAMS["credentials"], "HIRED_EMPLOYEES", HIRE_EMPLOYEES_SCHEMA
             )
-            return {"message": "backup is ready to download"}
+            return {"message": "Backup file was created"}
         elif operation == "restore":
-            return {"message": "backup is ready to download"}
+            restore_table_from_avro(CONFIG_PARAMS["credentials"], "HIRED_EMPLOYEES")
+            return {"message": "The backup file was uploaded"}
 
 
 class Departments(Resource):
@@ -100,42 +108,42 @@ class Departments(Resource):
                 "DEPARTMENTS",
                 "departments.csv",
                 colnames=["ID", "DEPARTMENT"],
-                datatypes={"ID": int, "DEPARTMENT": str},
+                datatypes=DEPARTMENTS_DT,
             )
-            if result:
-                return {"message": "The file was uploaded"}, 200
+            if result.shape[0]>=0:
+                return {"message": "The file was uploaded",'errors':result.to_json(orient='records')}, 200
             else:
                 return {"message": "Error encountered while processing the file"}, 200
         elif operation == "backup":
             backup_table_to_avro(
                 CONFIG_PARAMS["credentials"], "DEPARTMENTS", DEPARMENT_SCHEMA
             )
-            return {"message": "backup is ready to download"}
+            return {"message": "Backup file was created"}
         elif operation == "restore":
-            return {"message": "backup is ready to download"}
+            restore_table_from_avro(CONFIG_PARAMS["credentials"], "DEPARTMENTS")
+            return {"message": "The backup file was uploaded"}
 
 
 class Jobs(Resource):
-    def get(self,operation=None):
+    def get(self, operation=None):
         if operation == "upload":
             result = load_csv_to_snowflake_table(
                 CONFIG_PARAMS["credentials"],
                 "JOBS",
                 "jobs.csv",
                 colnames=["ID", "JOB"],
-                datatypes={"ID": int, "JOB": str},
+                datatypes=JOBS_DT,
             )
-            if result:
-                return {"message": "The file was uploaded"}, 200
+            if result.shape[0]>=0:
+                return {"message": "The file was uploaded",'errors':result.to_json(orient='records')}, 200
             else:
                 return {"message": "Error encountered while processing the file"}, 200
         elif operation == "backup":
-            backup_table_to_avro(
-                CONFIG_PARAMS["credentials"], "JOBS", JOB_SCHEMA
-            )
-            return {"message": "backup is ready to download"}
+            backup_table_to_avro(CONFIG_PARAMS["credentials"], "JOBS", JOB_SCHEMA)
+            return {"message": "Backup file was created"}
         elif operation == "restore":
-            return {"message": "backup is ready to download"}
+            restore_table_from_avro(CONFIG_PARAMS["credentials"], "JOBS")
+            return {"message": "The backup file was uploaded"}
 
 
 api.add_resource(Hired_Employees, "/hired_employees/<string:operation>")
@@ -145,8 +153,4 @@ api.add_resource(Jobs, "/jobs/<string:operation>")
 
 if __name__ == "__main__":
     initialize()
-    # backup_table_to_avro(CONFIG_PARAMS["credentials"], "HIRED_EMPLOYEES", HIRE_EMPLOYEES_SCHEMA)
-    # backup_table_to_avro(CONFIG_PARAMS["credentials"], "DEPARTMENTS", DEPARMENT_SCHEMA)
-    # backup_table_to_avro(CONFIG_PARAMS["credentials"], "JOBS", JOB_SCHEMA)
-    # restore_table_from_avro(CONFIG_PARAMS["credentials"],"departments")
-    app.run(port=3000, debug=True)
+    app.run(host="0.0.0.0",port=3000, debug=True)

@@ -1,0 +1,17 @@
+//upload
+
+http://127.0.0.1:3000/hired_employees/upload
+http://127.0.0.1:3000/departments/upload
+http://127.0.0.1:3000/jobs/upload
+
+//backup
+
+http://127.0.0.1:3000/hired_employees/backup
+http://127.0.0.1:3000/departments/backup
+http://127.0.0.1:3000/jobs/backup
+
+//restore
+
+http://127.0.0.1:3000/hired_employees/restore
+http://127.0.0.1:3000/departments/restore
+http://127.0.0.1:3000/jobs/restore

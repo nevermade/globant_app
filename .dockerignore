@@ -1,0 +1,5 @@
+*.avro
+*/*.avro
+.vscode/*
+Pipfile
+Pipfile.lock
